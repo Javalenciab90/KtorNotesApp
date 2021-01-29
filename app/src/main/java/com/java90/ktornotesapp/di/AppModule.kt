@@ -9,9 +9,9 @@ import com.java90.ktornotesapp.data.local.NoteDao
 import com.java90.ktornotesapp.data.local.NotesDatabase
 import com.java90.ktornotesapp.data.remote.BasicAuthInterceptor
 import com.java90.ktornotesapp.data.remote.NoteApi
-import com.java90.ktornotesapp.other.Constants.BASE_URL
-import com.java90.ktornotesapp.other.Constants.DATABASE_NAME
-import com.java90.ktornotesapp.other.Constants.ENCRYPTED_SHARED_PREF_NAME
+import com.java90.ktornotesapp.utils.Constants.BASE_URL
+import com.java90.ktornotesapp.utils.Constants.DATABASE_NAME
+import com.java90.ktornotesapp.utils.Constants.ENCRYPTED_SHARED_PREF_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

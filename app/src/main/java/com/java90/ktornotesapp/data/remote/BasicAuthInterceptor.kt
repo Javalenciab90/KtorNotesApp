@@ -1,6 +1,6 @@
 package com.java90.ktornotesapp.data.remote
 
-import com.java90.ktornotesapp.other.Constants.IGNORE_AUTH_URLS
+import com.java90.ktornotesapp.utils.Constants.IGNORE_AUTH_URLS
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.Response

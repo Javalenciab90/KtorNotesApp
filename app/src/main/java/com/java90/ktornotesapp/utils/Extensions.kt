@@ -1,4 +1,4 @@
-package com.java90.ktornotesapp.other
+package com.java90.ktornotesapp.utils
 
 import android.view.View
 import androidx.fragment.app.Fragment

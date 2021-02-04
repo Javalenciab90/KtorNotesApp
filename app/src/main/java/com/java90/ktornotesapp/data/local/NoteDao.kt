@@ -9,7 +9,7 @@ import com.java90.ktornotesapp.data.local.entities.Note
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Functions to define the access to the Database.
+ * Functions to define the access to the local Database.
  */
 
 @Dao

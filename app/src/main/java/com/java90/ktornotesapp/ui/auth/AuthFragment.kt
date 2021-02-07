@@ -40,7 +40,7 @@ class AuthFragment : Fragment() {
         binding.apply {
             btnRegister.setOnClickListener {
                 viewModel.register(
-                        etLoginEmail.text.toString().trim(),
+                        etRegisterEmail.text.toString().trim(),
                         etRegisterPassword.text.toString().trim(),
                         etRegisterPasswordConfirm.text.toString().trim()
                 )

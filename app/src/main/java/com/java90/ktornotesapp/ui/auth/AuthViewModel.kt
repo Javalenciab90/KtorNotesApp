@@ -17,6 +17,23 @@ class AuthViewModel @ViewModelInject constructor(
     private val _registerStatus = MutableLiveData<Resource<String>>()
     val registerStatus : LiveData<Resource<String>> = _registerStatus
 
+    private val _loggingStatus = MutableLiveData<Resource<String>>()
+    val loggingStatus : LiveData<Resource<String>> = _loggingStatus
+
+    fun login(email: String, password: String) {
+        _loggingStatus.postValue(Resource.loading(null))
+
+        if (!email.isEmailValid() || password.isEmpty()) {
+            _loggingStatus.postValue(Resource.error("Please fill out all the fields, check the email.", null))
+            return
+        }
+
+        viewModelScope.launch {
+            val result = repository.login(email, password)
+            _loggingStatus.postValue(result)
+        }
+    }
+
     fun register(email: String, password: String, repeatedPassword: String) {
         _registerStatus.postValue(Resource.loading(null))
 

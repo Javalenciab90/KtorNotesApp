@@ -1,28 +1,38 @@
 package com.java90.ktornotesapp.ui.notes
 
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.java90.ktornotesapp.R
 import com.java90.ktornotesapp.databinding.FragmentNotesBinding
+import com.java90.ktornotesapp.ui.adapters.NoteAdapter
 import com.java90.ktornotesapp.utils.Constants.KEY_LOGGED_IN_EMAIL
 import com.java90.ktornotesapp.utils.Constants.KEY_LOGGED_IN_PASSWORD
 import com.java90.ktornotesapp.utils.Constants.NO_EMAIL
 import com.java90.ktornotesapp.utils.Constants.NO_PASSWORD
+import com.java90.ktornotesapp.utils.Status
+import com.java90.ktornotesapp.utils.showSnackBar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class NotesFragment : Fragment() {
 
+    private val viewModel: NotesViewModel by viewModels()
+
     @Inject
     lateinit var sharedPref: SharedPreferences
 
     private lateinit var binding: FragmentNotesBinding
+    private lateinit var noteAdapter: NoteAdapter
 
     override fun onCreateView(inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -34,8 +44,50 @@ class NotesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        requireActivity().requestedOrientation = SCREEN_ORIENTATION_USER
+        setUpRecyclerView()
+        setUpObservers()
+
+        noteAdapter.setOnItemClickListener {
+            findNavController().navigate(NotesFragmentDirections.actionNotesFragmentToNoteDetailFragment(it.id))
+        }
+
         binding.fabAddNote.setOnClickListener {
             findNavController().navigate(NotesFragmentDirections.actionNotesFragmentToAddEditNoteFragment(""))
+        }
+    }
+
+    private fun setUpObservers() {
+        viewModel.allNotes.observe(viewLifecycleOwner, Observer {
+            it?.let { event ->
+                // peekContent is to retrieve the data of event
+                val result = event.peekContent()
+                when (result.status) {
+                    Status.LOADING -> {
+                        result.data?.let { notes -> noteAdapter.notes = notes }
+                        binding.swipeRefreshLayout.isRefreshing = true
+                    }
+                    Status.SUCCESS -> {
+                        result.data?.let { notes -> noteAdapter.notes = notes }
+                        binding.swipeRefreshLayout.isRefreshing = false
+                    }
+                    Status.ERROR -> { // Show an Error but Still showing data from Database.
+                        event.getContentIfNotHandled()?.let { errorResource ->
+                            errorResource.message?.let { message ->  showSnackBar(message) }
+                        }
+                        result.data?.let { notes -> noteAdapter.notes = notes }
+                        binding.swipeRefreshLayout.isRefreshing = false
+                    }
+                }
+            }
+        })
+    }
+
+    private fun setUpRecyclerView() {
+        binding.rvNotes.apply {
+            noteAdapter = NoteAdapter()
+            adapter = noteAdapter
+            layoutManager = LinearLayoutManager(requireContext())
         }
     }
 

@@ -68,7 +68,7 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
                     val drawableWrapper = DrawableCompat.wrap(it)
                     val color = Color.parseColor("#${note.color}")
                     DrawableCompat.setTint(drawableWrapper, color)
-                    viewNoteColor.background = it
+                    viewNoteColor.background = drawableWrapper
                 }
 
                 itemView.setOnClickListener {

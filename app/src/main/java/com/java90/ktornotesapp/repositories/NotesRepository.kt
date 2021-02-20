@@ -19,6 +19,23 @@ class NotesRepository @Inject constructor(
     private val context: Application
 ) {
 
+    suspend fun insertNote(note: Note) {
+        val response = try {
+            noteApi.addNote(note)
+        } catch (e: Exception) { null }
+        if (response != null && response.isSuccessful)  {
+            noteDao.insertNote(note.apply { isSynced = true })
+        } else {
+            noteDao.insertNote(note)
+        }
+    }
+
+    suspend fun insertNotes(notes: List<Note>) {
+        notes.forEach { insertNote(it) }
+    }
+
+    suspend fun getNoteById(noteID: String) = noteDao.getNoteById(noteID)
+
     fun getAllNotes() : Flow<Resource<List<Note>>> {
         return networkBoundResource(
                 query = {
@@ -29,7 +46,7 @@ class NotesRepository @Inject constructor(
                 },
                 saveFetchResult = { response ->
                     response.body()?.let {
-                        // TODO: insert notes in database
+                        insertNotes(it)
                     }
                 },
                 shouldFetch = {

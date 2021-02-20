@@ -21,5 +21,5 @@ data class Note(
     val owners: List<String>,
     val color: String,
     @Expose(deserialize = false, serialize = false)
-    val isSynced: Boolean = false
+    var isSynced: Boolean = false
 )

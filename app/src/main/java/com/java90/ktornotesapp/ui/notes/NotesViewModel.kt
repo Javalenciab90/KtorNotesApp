@@ -11,17 +11,6 @@ class NotesViewModel @ViewModelInject constructor(
         private val repository: NotesRepository
 ) : ViewModel() {
 
-    private val _forceUpdate = MutableLiveData(false)
-
-    private val _allNotes = MutableLiveData<Event<Resource<List<Note>>>>()
-    val allNotes : LiveData<Event<Resource<List<Note>>>> = _allNotes
-
-    init {
-        getDataFromDatabaseOnce()
-    }
-
-    fun syncAllNotes() = _forceUpdate.postValue(true)
-
     /**
      * Map() is conceptually identical to the use in RXJava, basically you are changing a parameter of LiveData in another one.
      *
@@ -30,11 +19,16 @@ class NotesViewModel @ViewModelInject constructor(
      * efficient the memory usually) you pass a new LiveData that execute the same action( getting a query for instance).
      *
      */
-    private fun getDataFromDatabaseOnce() {
-        _forceUpdate.switchMap {
-            repository.getAllNotes().asLiveData(viewModelScope.coroutineContext)
-        }.switchMap {
-            MutableLiveData(Event(it))
-        }
+
+    private val _forceUpdate = MutableLiveData(false)
+
+    private val _allNotes = _forceUpdate.switchMap {
+        repository.getAllNotes().asLiveData(viewModelScope.coroutineContext)
+    }.switchMap {
+        MutableLiveData(Event(it))
     }
+    val allNotes : LiveData<Event<Resource<List<Note>>>> = _allNotes
+
+    fun syncAllNotes() = _forceUpdate.postValue(true)
+
 }

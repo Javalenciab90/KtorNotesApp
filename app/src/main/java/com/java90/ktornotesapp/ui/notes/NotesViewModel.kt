@@ -6,6 +6,7 @@ import com.java90.ktornotesapp.data.local.entities.Note
 import com.java90.ktornotesapp.repositories.NotesRepository
 import com.java90.ktornotesapp.utils.Event
 import com.java90.ktornotesapp.utils.Resource
+import kotlinx.coroutines.launch
 
 class NotesViewModel @ViewModelInject constructor(
         private val repository: NotesRepository
@@ -30,5 +31,17 @@ class NotesViewModel @ViewModelInject constructor(
     val allNotes : LiveData<Event<Resource<List<Note>>>> = _allNotes
 
     fun syncAllNotes() = _forceUpdate.postValue(true)
+
+    fun insertNote(note: Note) = viewModelScope.launch {
+        repository.insertNote(note)
+    }
+
+    fun deleteNote(noteID: String) = viewModelScope.launch {
+        repository.deleteNote(noteID)
+    }
+
+    fun deleteLocallyDeletedNoteID(deletedNoteID: String) = viewModelScope.launch {
+        repository.deleteLocallyDeletedNoteID(deletedNoteID)
+    }
 
 }

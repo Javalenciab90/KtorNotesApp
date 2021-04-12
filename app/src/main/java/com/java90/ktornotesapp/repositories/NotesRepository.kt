@@ -13,6 +13,7 @@ import com.java90.ktornotesapp.utils.networkBoundResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import javax.inject.Inject
 
 class NotesRepository @Inject constructor(
@@ -50,11 +51,29 @@ class NotesRepository @Inject constructor(
         notes.forEach { insertNote(it) }
     }
 
+    fun observeNoteByID(noteID: String) = noteDao.observeNoteById(noteID)
+
     suspend fun deleteLocallyDeletedNoteID(deletedNoteID: String) {
         noteDao.deleteLocallyDeletedNotedID(deletedNoteID)
     }
 
     suspend fun getNoteById(noteID: String) = noteDao.getNoteById(noteID)
+
+    private var curNotesResponse: Response<List<Note>>? = null
+    private suspend fun syncNotes() {
+
+        val unSyncedNotes = noteDao.getAllUnsyncedNotes()
+        unSyncedNotes.forEach { note -> insertNote(note) }
+
+        val locallyDeletedNoteIDs = noteDao.getAllLocallyDeletedNoteIDs()
+        locallyDeletedNoteIDs.forEach { id -> deleteNote(id.deletedNoteID) }
+
+        curNotesResponse = noteApi.getNotes()
+        curNotesResponse?.body()?.let { notes ->
+            noteDao.deleteAllNotes()
+            insertNotes(notes.onEach { note -> note.isSynced = true } )
+        }
+    }
 
     fun getAllNotes() : Flow<Resource<List<Note>>> {
         return networkBoundResource(
@@ -62,11 +81,12 @@ class NotesRepository @Inject constructor(
                     noteDao.getAllNotes()
                 },
                 fetch = {
-                    noteApi.getNotes()
+                    syncNotes()
+                    curNotesResponse
                 },
                 saveFetchResult = { response ->
-                    response.body()?.let {
-                        insertNotes(it)
+                    response?.body()?.let {
+                        insertNotes(it.onEach { note -> note.isSynced = true })
                     }
                 },
                 shouldFetch = {
